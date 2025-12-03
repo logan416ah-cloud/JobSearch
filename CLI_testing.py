@@ -88,13 +88,21 @@ def main() -> None:
         "filter", help="Filter through job description for keywords"
     )
 
+    state_group = filter_parser.add_mutually_exclusive_group(required=True)
+    state_group.add_argument("--state", help="State to compile (ex. 'New Jersey')")
+    state_group.add_argument("--all", action="store_true", help="Use all US states")
+
     filter_parser.add_argument(
         "--keywords",
         nargs="+",
         required=True,
         help="Any number of words you wish to search for",
     )
-
+    filter_parser.add_argument(
+        "--job",
+        required=True,
+        help="The job title to filter by",
+    )
 
     args = parser.parse_args()
 
@@ -189,31 +197,16 @@ def main() -> None:
             "Wyoming",
         ]
 
-        job_title = input(
-            "Please specify which job title you would like to search through: "
-        )
-
-        state_selection = input(
-            "Please enter the state you would like to search through OR type all: "
-        )
-
-        if state_selection.lower() == "all":
-            use_all_states = True
-            state_value = None
-        else:
-            if state_selection not in states:
-                print(f"'{state_selection}' is not a state.")
-                return
-            use_all_state = False
-
-            state_value = state_selection
-
         c = Clean()
         combined = c.create_dataset(
-            job_title, state=state_value, all_states=use_all_states, save=False
+            job_title=args.job,
+            state=args.state,
+            all_states=args.all,
+            save=False,
         )
 
         print(c.filterdesc(combined, *args.keywords))
+        print(f"\nNumber of occurences from {len(combined)} job listings.\n")
 
 
 if __name__ == "__main__":
