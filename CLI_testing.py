@@ -203,10 +203,14 @@ def main() -> None:
             state=args.state,
             all_states=args.all,
             save=False,
+            year=None,
+            month=None,
+            day=None,
+            date=None,
         )
 
         print(c.filterdesc(combined, *args.keywords))
-        print(f"\nNumber of occurences from {len(combined)} job listings.\n")
+        print(f"\nKeywords searched across {len(combined)} job listings.\n")
 
 
 if __name__ == "__main__":
