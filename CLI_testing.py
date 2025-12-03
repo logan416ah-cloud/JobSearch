@@ -2,12 +2,13 @@ from JobSearch import JobSearch, Clean
 import argparse
 from datetime import datetime
 
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="JobSearch CLI with subcommands")
 
     subparsers = parser.add_subparsers(dest="command", required=True)
 
-    #-----------------------------------------------------------------------
+    # -----------------------------------------------------------------------
     search_parser = subparsers.add_parser("search", help="Search for jobs in a state")
     search_parser.add_argument(
         "--state",
@@ -25,12 +26,12 @@ def main() -> None:
         help="If set, save the results to a CSV",
     )
 
-    #-----------------------------------------------------------------------
+    # -----------------------------------------------------------------------
     create_dataset_parser = subparsers.add_parser(
         "create_dataset", help="Compile specified CSV files into one dataset"
     )
 
-    # User must specify a --state OR --all 
+    # User must specify a --state OR --all
     state_group = create_dataset_parser.add_mutually_exclusive_group(required=True)
     state_group.add_argument("--state", help="State to compile (ex. 'New Jersey')")
     state_group.add_argument("--all", action="store_true", help="Use all US states")
@@ -49,10 +50,26 @@ def main() -> None:
     )
 
     # Date filters
-    create_dataset_parser.add_argument("--year", type=int, help="Year (YYYY)",)
-    create_dataset_parser.add_argument("--month", type=int, help="Month (1-12)",)
-    create_dataset_parser.add_argument("--day", type=int, help="Day (1-31)",)
-    create_dataset_parser.add_argument("--date", type=str, help="Full date 'YYYY-MM-DD'",)
+    create_dataset_parser.add_argument(
+        "--year",
+        type=int,
+        help="Year (YYYY)",
+    )
+    create_dataset_parser.add_argument(
+        "--month",
+        type=int,
+        help="Month (1-12)",
+    )
+    create_dataset_parser.add_argument(
+        "--day",
+        type=int,
+        help="Day (1-31)",
+    )
+    create_dataset_parser.add_argument(
+        "--date",
+        type=str,
+        help="Full date 'YYYY-MM-DD'",
+    )
 
     args = parser.parse_args()
 
@@ -75,7 +92,7 @@ def main() -> None:
             date=args.date,
         )
         print(combined.head())
-        
 
-if __name__=="__main__":
+
+if __name__ == "__main__":
     main()
