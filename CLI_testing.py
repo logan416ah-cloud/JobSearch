@@ -27,6 +27,22 @@ def main() -> None:
     )
 
     # -----------------------------------------------------------------------
+    all_parser = subparsers.add_parser(
+        "search_all", help="Search for jobs in ALL states"
+    )
+
+    all_parser.add_argument(
+        "--job",
+        required=True,
+        help="Job title to search (ex. 'Cybersecurity Analyst')",
+    )
+    all_parser.add_argument(
+        "--save",
+        action="store_true",
+        help="If set, save the results to a CSV",
+    )
+
+    # -----------------------------------------------------------------------
     create_dataset_parser = subparsers.add_parser(
         "create_dataset", help="Compile specified CSV files into one dataset"
     )
@@ -77,9 +93,26 @@ def main() -> None:
         api_key = input("Enter your API Key. ")
         js = JobSearch(api_key)
         df = js.search(args.job, args.state, save=args.save)
+
+        print(df.head())
+
+    elif args.command == "search_all":
+        api_key = input("Enter your API Key. ")
+        js = JobSearch(api_key)
+        df = js.search_all_states(args.job, save=args.save)
+
         print(df.head())
 
     elif args.command == "create_dataset":
+        parsed_date = None
+
+        if args.date:
+            try:
+                parsed_date = datetime.strptime(args.date, "%Y-%m-%d")
+            except ValueError:
+                print("ERROR. Date must be YYYY-MM-DD")
+                return
+
         c = Clean()
         combined = c.create_dataset(
             args.job,
@@ -89,7 +122,7 @@ def main() -> None:
             year=args.year,
             month=args.month,
             day=args.day,
-            date=args.date,
+            date=parsed_date,
         )
         print(combined.head())
 
