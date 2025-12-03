@@ -8,7 +8,7 @@ def main() -> None:
 
     subparsers = parser.add_subparsers(dest="command", required=True)
 
-    # -----------------------------------------------------------------------
+    # For search()
     search_parser = subparsers.add_parser("search", help="Search for jobs in a state")
     search_parser.add_argument(
         "--state",
@@ -26,7 +26,7 @@ def main() -> None:
         help="If set, save the results to a CSV",
     )
 
-    # -----------------------------------------------------------------------
+    # For search_all_states()
     all_parser = subparsers.add_parser(
         "search_all", help="Search for jobs in ALL states"
     )
@@ -42,7 +42,7 @@ def main() -> None:
         help="If set, save the results to a CSV",
     )
 
-    # -----------------------------------------------------------------------
+    # For create_dataset()
     create_dataset_parser = subparsers.add_parser(
         "create_dataset", help="Compile specified CSV files into one dataset"
     )
@@ -57,15 +57,11 @@ def main() -> None:
         required=True,
         help="The job title to compile",
     )
-
-    # Save flag
     create_dataset_parser.add_argument(
         "--save",
         action="store_true",
         help="If set, save the results to a CSV",
     )
-
-    # Date filters
     create_dataset_parser.add_argument(
         "--year",
         type=int,
@@ -86,6 +82,19 @@ def main() -> None:
         type=str,
         help="Full date 'YYYY-MM-DD'",
     )
+
+    # For filterdesc()
+    filter_parser = subparsers.add_parser(
+        "filter", help="Filter through job description for keywords"
+    )
+
+    filter_parser.add_argument(
+        "--keywords",
+        nargs="+",
+        required=True,
+        help="Any number of words you wish to search for",
+    )
+
 
     args = parser.parse_args()
 
@@ -125,6 +134,86 @@ def main() -> None:
             date=parsed_date,
         )
         print(combined.head())
+
+    elif args.command == "filter":
+        states = [
+            "Alabama",
+            "Alaska",
+            "Arizona",
+            "Arkansas",
+            "California",
+            "Colorado",
+            "Connecticut",
+            "Delaware",
+            "Florida",
+            "Georgia",
+            "Hawaii",
+            "Idaho",
+            "Illinois",
+            "Indiana",
+            "Iowa",
+            "Kansas",
+            "Kentucky",
+            "Louisiana",
+            "Maine",
+            "Maryland",
+            "Massachusetts",
+            "Michigan",
+            "Minnesota",
+            "Mississippi",
+            "Missouri",
+            "Montana",
+            "Nebraska",
+            "Nevada",
+            "New Hampshire",
+            "New Jersey",
+            "New Mexico",
+            "New York",
+            "North Carolina",
+            "North Dakota",
+            "Ohio",
+            "Oklahoma",
+            "Oregon",
+            "Pennsylvania",
+            "Rhode Island",
+            "South Carolina",
+            "South Dakota",
+            "Tennessee",
+            "Texas",
+            "Utah",
+            "Vermont",
+            "Virginia",
+            "Washington",
+            "West Virginia",
+            "Wisconsin",
+            "Wyoming",
+        ]
+
+        job_title = input(
+            "Please specify which job title you would like to search through: "
+        )
+
+        state_selection = input(
+            "Please enter the state you would like to search through OR type all: "
+        )
+
+        if state_selection.lower() == "all":
+            use_all_states = True
+            state_value = None
+        else:
+            if state_selection not in states:
+                print(f"'{state_selection}' is not a state.")
+                return
+            use_all_state = False
+
+            state_value = state_selection
+
+        c = Clean()
+        combined = c.create_dataset(
+            job_title, state=state_value, all_states=use_all_states, save=False
+        )
+
+        print(c.filterdesc(combined, *args.keywords))
 
 
 if __name__ == "__main__":
