@@ -4,6 +4,7 @@ import pandas as pd
 import datetime as dt
 from tqdm import tqdm
 import re
+import time
 
 
 class JobSearch:
@@ -64,6 +65,37 @@ class JobSearch:
             print(f"WARNING: API KEY check failed. Error: {e}")
         return False
 
+    def _get_page_with_retry(self, params: dict, max_retries: int = 5):
+        for attempt in range(1, max_retries + 1):
+            try:
+                response = requests.get(self.url, params=params)
+                data = response.json()
+
+                if "error" in data and "not ready" in data["error"].lower():
+                    wait = data.get("retry_after", 2)
+                    print(
+                        f"Pagination not ready. Retrying in {wait}s... (Attempt {attempt})"
+                    )
+                    time.sleep(wait)
+                    continue
+
+                if data.get("status") == "Processing":
+                    wait = data.get("retry_after", 2)
+                    print(
+                        f"Page still processing. Waiting {wait}s... (Attempt {attempt})"
+                    )
+                    time.sleep(wait)
+                    continue
+
+                return data
+
+            except requests.RequestException as e:
+                print(f"Request error on attempt {attempt}: {e}")
+                time.sleep(1)
+
+        print("Max retries reached. Returning last response (may be incomplete).")
+        return data if "data" in locals() else {}
+
     def search(self, job_title: str, location: str, save: bool = False) -> pd.DataFrame:
         """
         Searches for job listings within any specified state in the United States.
@@ -92,11 +124,9 @@ class JobSearch:
                 if next_page_token:
                     params["next_page_token"] = next_page_token
 
-                search = requests.get(self.url, params=params)
-                results = search.json()
+                results = self._get_page_with_retry(params)
 
                 jobs = results.get("jobs_results", [])
-
                 if not jobs:
                     break
 
@@ -283,7 +313,7 @@ class Clean:
 
         if not valid:
             raise ValueError(
-                "You must specify either 'state' OR  all_state=True, but not both"
+                "You must specify either 'state' OR  all_states=True, but not both"
             )
 
         # Contruct the prefix for the file name.
@@ -379,7 +409,7 @@ class Clean:
                 - min_raw (float or None): Minimum salary value.
                 - max_raw (float or None): Maximum salary value.
                 - avg_value (float or None): Average of min and max.
-                - annual (float or None): Annualized salary.
+                - annualized_avg (float or None): Annualized salary.
                 - period (str or None): "hour", "month", "year"
         """
 
@@ -614,18 +644,18 @@ class Clean:
         if df.empty:
             return pd.DataFrame()
 
-        min = pd.to_numeric(df["min_annualized"], errors="coerce")
-        max = pd.to_numeric(df["max_annualized"], errors="coerce")
-        avg = pd.to_numeric(df["annualized_avg"], errors="coerce")
+        min_salary = pd.to_numeric(df["min_annualized"], errors="coerce")
+        max_salary = pd.to_numeric(df["max_annualized"], errors="coerce")
+        avg_salary = pd.to_numeric(df["annualized_avg"], errors="coerce")
 
         stats = pd.DataFrame(
             {
-                "min_salary_median": [min.median()],
-                "min_salary_mean": [min.mean()],
-                "max_salary_median": [max.median()],
-                "max_salary_mean": [max.mean()],
-                "avg_salary_median": [avg.median()],
-                "avg_salary_mean": [avg.mean()],
+                "min_salary_median": [min_salary.median()],
+                "min_salary_mean": [min_salary.mean()],
+                "max_salary_median": [max_salary.median()],
+                "max_salary_mean": [max_salary.mean()],
+                "avg_salary_median": [avg_salary.median()],
+                "avg_salary_mean": [avg_salary.mean()],
                 "count": [len(df)],
             }
         )
