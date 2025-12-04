@@ -5,6 +5,7 @@ import datetime as dt
 from tqdm import tqdm
 import re
 import time
+from collections import Counter
 
 
 class JobSearch:
@@ -601,16 +602,15 @@ class Clean:
         if df.empty or not keywords:
             return pd.DataFrame()
 
-        df["_desc"] = df["description"].fillna("").astype(str).str.lower()
+        desc = df["description"].fillna("").astype(str).str.lower()
 
         # Allow for regex to treat keywords literally
         safe_keywords = [re.escape(k.lower()) for k in keywords]
 
         # Build regex pattern matching ANY of the keywords
         filter_keywords = r"(%s)" % "|".join(safe_keywords)
-
-        result = df[df["_desc"].str.contains(filter_keywords, na=False)]
-        result_rows = len(result)
+        result = desc.str.contains(filter_keywords, na=False)
+        result_rows = result.sum()
         df_rows = len(df)
 
         # Count each keyword individually
@@ -618,13 +618,15 @@ class Clean:
         for kw in keywords:
             safe_kw = re.escape(kw.lower())
 
+            occurrences = desc.str.count(safe_kw).sum()
             # Count how many jobs contain this keyword
-            count = int(df["_desc"].str.contains(safe_kw, na=False).sum())
+            count = int(desc.str.contains(safe_kw, regex=True).sum())
 
             # Store results in a dictionary
             keyword_stats.append(
                 {
                     "keyword": kw,
+                    "occurrences": int(occurrences),
                     "count": count,
                     "percent_total": round((count / df_rows) * 100, 2)
                     if df_rows
@@ -637,6 +639,9 @@ class Clean:
 
         # Convert list into a DataFrame
         kw_df = pd.DataFrame(keyword_stats)
+        kw_df = kw_df.sort_values(
+            by=["occurrences", "count"], ascending=[False, False]
+        ).reset_index(drop=True)
 
         return kw_df
 
@@ -672,6 +677,6 @@ if __name__ == "__main__":
 
     c = Clean()
     combined = c.create_dataset("Cybersecurity", all_states=True)
-    print(c.stats(combined))
+    print(c.filterdesc(combined, "python", "aws", "COMPTIA", "AzuRe"))
 
     # print(c.filterdesc(combined, "python", "splunk", "aws"))
