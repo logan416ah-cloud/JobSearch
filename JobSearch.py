@@ -424,7 +424,7 @@ class Clean:
                     "avg_value",
                     "min_annualized",
                     "max_annualized",
-                    "annual",
+                    "annualized_avg",
                     "period",
                 ]
             }
@@ -502,7 +502,7 @@ class Clean:
                         "avg_value",
                         "min_annualized",
                         "max_annualized",
-                        "annual",
+                        "annualized_avg",
                         "period",
                     ]
                 }
@@ -677,6 +677,5 @@ if __name__ == "__main__":
 
     c = Clean()
     combined = c.create_dataset("Cybersecurity", all_states=True)
-    print(c.filterdesc(combined, "python", "aws", "COMPTIA", "AzuRe"))
-
-    # print(c.filterdesc(combined, "python", "splunk", "aws"))
+    print(c.filterdesc(combined, "python", "aws", "COMPTIA", "AzuRe", "Security+", "Penetration testing"))
+    print(c.salary_stats(combined))
