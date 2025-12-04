@@ -466,21 +466,33 @@ class Clean:
 
         # Convert to annual salary based on the pay period
         if period == "hour":
+            min_annualized = low * 40 * 52
+            max_annualized = high * 40 * 52
             annual = avg * 40 * 52  # 40 hours * 52 weeks
         elif period == "day":
+            min_annualized = low * 260
+            max_annualized = high * 260
             annual = avg * 260
         elif period == "week":
+            min_annualized = low * 52
+            max_annualized = high * 52
             annual = avg * 52
         elif period == "month":
+            min_annualized = low * 12
+            max_annualized = high * 12
             annual = avg * 12
         else:
+            min_annualized = low
+            max_annualized = high
             annual = avg
 
         return {
             "min_raw": low,
+            "min_annualized": round(min_annualized, 2),
             "max_raw": high,
+            "max_annualized": round(max_annualized, 2),
             "avg_value": round(avg, 2),
-            "annual": round(annual, 2),
+            "annualized_avg": round(annual, 2),
             "period": period,
         }
 
@@ -581,16 +593,65 @@ class Clean:
 
         return kw_df
 
+    def stats(self, df: pd.DataFrame):
+
+        if df.empty:
+            return pd.DataFrame
+
+        data_list = []
+
+        min_ = pd.to_numeric(df["min_raw"], errors="coerce")
+        max_ = pd.to_numeric(df["max_raw"], errors="coerce")
+        avg_ = pd.to_numeric(df["avg_value"], errors="coerce")
+        annual_ = pd.to_numeric(df["annual"], errors="coerce")
+
+        period = df["period"].fillna("").astype(str).str.lower()
+
+        hour = period == "hour"
+        day = period == "day"
+        week = period == "week"
+        month = period == "month"
+        year = period == "year"
+
+        df["annualized_min"] = min_
+        df["annualized_max"] = max_
+
+        df.loc[hour, "annualized_min"] = min_[hour] * 40 * 52
+        df.loc[hour, "annualized_max"] = max_[hour] * 40 * 52
+
+        df.loc[day, "annualized_min"] = min_[day] * 260
+        df.loc[day, "annualized_max"] = max_[day] * 260
+
+        df.loc[week, "annualized_min"] = min_[week] * 52
+        df.loc[week, "annualized_max"] = max_[week] * 52
+
+        df.loc[month, "annualized_min"] = min_[month] * 12
+        df.loc[month, "annualized_max"] = max_[month] * 12
+
+        stats = pd.DataFrame({
+            "min_sal_median": [df["annualized_min"].median()],
+            "min_sal_mean": [df["annualized_min"].mean()],
+            "max_sal_median": [df["annualized_max"].median()],
+            "max_sal_mean": [df["annualized_max"].mean()],
+            "avg_sal_median": [df["annual"].median()],
+            "avg_sal_mean": [df["annual"].mean()],
+        })
+
+        return stats
+
+
+
+
 
 if __name__ == "__main__":
     # Example Usage
-    j = JobSearch("your_api_key_here")
+    # j = JobSearch("your_api_key_here")
 
-    df = j.search("Cybersecurity", "New York", save=True)
-    print(df.head())
+    # df = j.search("Cybersecurity", "New York", save=True)
+    # print(df.head())
 
     c = Clean()
     combined = c.create_dataset("Cybersecurity", all_states=True)
-    print(combined.head())
+    print(c.stats(combined["annualized_min"]))
 
-    print(c.filterdesc(combined, "python", "splunk", "aws"))
+    # print(c.filterdesc(combined, "python", "splunk", "aws"))
