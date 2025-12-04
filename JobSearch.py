@@ -386,7 +386,9 @@ class Clean:
         # If salary is missing OR not a string, return None.
         if not isinstance(s, str) or s.strip() == "":
             return {
-                k: None for k in ["min_raw", "max_raw", "avg_value", "annual", "period"]
+                k: None for k in 
+                ["min_raw", "max_raw", "avg_value", "min_annualized",
+                 "max_annualized", "annual", "period"]
             }
 
         original = s  # Stores the original for period detection.
@@ -456,7 +458,9 @@ class Clean:
             if not single_match:
                 return {
                     k: None
-                    for k in ["min_raw", "max_raw", "avg_value", "annual", "period"]
+                    for k in
+                    ["min_raw", "max_raw", "avg_value", "min_annualized",
+                     "max_annualized", "annual", "period"]
                 }
 
             low = high = self.convert_number(single_match[0])
@@ -468,31 +472,31 @@ class Clean:
         if period == "hour":
             min_annualized = low * 40 * 52
             max_annualized = high * 40 * 52
-            annual = avg * 40 * 52  # 40 hours * 52 weeks
+            annualized_avg = avg * 40 * 52  # 40 hours * 52 weeks
         elif period == "day":
             min_annualized = low * 260
             max_annualized = high * 260
-            annual = avg * 260
+            annualized_avg = avg * 260
         elif period == "week":
             min_annualized = low * 52
             max_annualized = high * 52
-            annual = avg * 52
+            annualized_avg = avg * 52
         elif period == "month":
             min_annualized = low * 12
             max_annualized = high * 12
-            annual = avg * 12
+            annualized_avg = avg * 12
         else:
             min_annualized = low
             max_annualized = high
-            annual = avg
+            annualized_avg = avg
 
         return {
             "min_raw": low,
-            "min_annualized": round(min_annualized, 2),
             "max_raw": high,
-            "max_annualized": round(max_annualized, 2),
             "avg_value": round(avg, 2),
-            "annualized_avg": round(annual, 2),
+            "min_annualized": round(min_annualized, 2),
+            "max_annualized": round(max_annualized, 2),
+            "annualized_avg": round(annualized_avg, 2),
             "period": period,
         }
 
@@ -593,54 +597,27 @@ class Clean:
 
         return kw_df
 
-    def stats(self, df: pd.DataFrame):
+    def salary_stats(self, df: pd.DataFrame):
 
         if df.empty:
-            return pd.DataFrame
+            return pd.DataFrame()
 
-        data_list = []
+        min = pd.to_numeric(df["min_annualized"], errors="coerce")
+        max = pd.to_numeric(df["max_annualized"], errors="coerce")
+        avg = pd.to_numeric(df["annualized_avg"], errors="coerce")
 
-        min_ = pd.to_numeric(df["min_raw"], errors="coerce")
-        max_ = pd.to_numeric(df["max_raw"], errors="coerce")
-        avg_ = pd.to_numeric(df["avg_value"], errors="coerce")
-        annual_ = pd.to_numeric(df["annual"], errors="coerce")
-
-        period = df["period"].fillna("").astype(str).str.lower()
-
-        hour = period == "hour"
-        day = period == "day"
-        week = period == "week"
-        month = period == "month"
-        year = period == "year"
-
-        df["annualized_min"] = min_
-        df["annualized_max"] = max_
-
-        df.loc[hour, "annualized_min"] = min_[hour] * 40 * 52
-        df.loc[hour, "annualized_max"] = max_[hour] * 40 * 52
-
-        df.loc[day, "annualized_min"] = min_[day] * 260
-        df.loc[day, "annualized_max"] = max_[day] * 260
-
-        df.loc[week, "annualized_min"] = min_[week] * 52
-        df.loc[week, "annualized_max"] = max_[week] * 52
-
-        df.loc[month, "annualized_min"] = min_[month] * 12
-        df.loc[month, "annualized_max"] = max_[month] * 12
 
         stats = pd.DataFrame({
-            "min_sal_median": [df["annualized_min"].median()],
-            "min_sal_mean": [df["annualized_min"].mean()],
-            "max_sal_median": [df["annualized_max"].median()],
-            "max_sal_mean": [df["annualized_max"].mean()],
-            "avg_sal_median": [df["annual"].median()],
-            "avg_sal_mean": [df["annual"].mean()],
+            "min_salary_median": [min.median()],
+            "min_salary_mean": [min.mean()],
+            "max_salary_median": [max.median()],
+            "max_salary_mean": [max.mean()],
+            "avg_salary_median": [avg.median()],
+            "avg_salary_mean": [avg.mean()],
+            "count": [len(df)],
         })
 
         return stats
-
-
-
 
 
 if __name__ == "__main__":
@@ -652,6 +629,6 @@ if __name__ == "__main__":
 
     c = Clean()
     combined = c.create_dataset("Cybersecurity", all_states=True)
-    print(c.stats(combined["annualized_min"]))
+    print(c.stats(combined))
 
     # print(c.filterdesc(combined, "python", "splunk", "aws"))
