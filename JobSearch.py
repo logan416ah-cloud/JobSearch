@@ -386,9 +386,16 @@ class Clean:
         # If salary is missing OR not a string, return None.
         if not isinstance(s, str) or s.strip() == "":
             return {
-                k: None for k in 
-                ["min_raw", "max_raw", "avg_value", "min_annualized",
-                 "max_annualized", "annual", "period"]
+                k: None
+                for k in [
+                    "min_raw",
+                    "max_raw",
+                    "avg_value",
+                    "min_annualized",
+                    "max_annualized",
+                    "annual",
+                    "period",
+                ]
             }
 
         original = s  # Stores the original for period detection.
@@ -458,9 +465,15 @@ class Clean:
             if not single_match:
                 return {
                     k: None
-                    for k in
-                    ["min_raw", "max_raw", "avg_value", "min_annualized",
-                     "max_annualized", "annual", "period"]
+                    for k in [
+                        "min_raw",
+                        "max_raw",
+                        "avg_value",
+                        "min_annualized",
+                        "max_annualized",
+                        "annual",
+                        "period",
+                    ]
                 }
 
             low = high = self.convert_number(single_match[0])
@@ -598,7 +611,6 @@ class Clean:
         return kw_df
 
     def salary_stats(self, df: pd.DataFrame):
-
         if df.empty:
             return pd.DataFrame()
 
@@ -606,16 +618,17 @@ class Clean:
         max = pd.to_numeric(df["max_annualized"], errors="coerce")
         avg = pd.to_numeric(df["annualized_avg"], errors="coerce")
 
-
-        stats = pd.DataFrame({
-            "min_salary_median": [min.median()],
-            "min_salary_mean": [min.mean()],
-            "max_salary_median": [max.median()],
-            "max_salary_mean": [max.mean()],
-            "avg_salary_median": [avg.median()],
-            "avg_salary_mean": [avg.mean()],
-            "count": [len(df)],
-        })
+        stats = pd.DataFrame(
+            {
+                "min_salary_median": [min.median()],
+                "min_salary_mean": [min.mean()],
+                "max_salary_median": [max.median()],
+                "max_salary_mean": [max.mean()],
+                "avg_salary_median": [avg.median()],
+                "avg_salary_mean": [avg.mean()],
+                "count": [len(df)],
+            }
+        )
 
         return stats
 
