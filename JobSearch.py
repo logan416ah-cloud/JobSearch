@@ -665,6 +665,12 @@ class Clean:
             }
         )
 
+        salary_cols = [col for col in stats.columns if col != "count"]
+
+        stats[salary_cols] = stats[salary_cols].applymap(
+            lambda x: f"${x:,.2f}" if pd.notnull(x) else x
+        )
+
         return stats
 
 
