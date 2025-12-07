@@ -119,9 +119,21 @@ def main() -> None:
         help="The job title to filter by",
     )
 
-    salary_stats_parser.add_argument("--year", help="The year (YYYY) to filter by",)
-    salary_stats_parser.add_argument("--month", help="The month (MM) to filter by",)
-    salary_stats_parser.add_argument("--day", help="The day (DD) to filter by",)
+    salary_stats_parser.add_argument(
+        "--year",
+        type=int,
+        help="The year (YYYY) to filter by",
+    )
+    salary_stats_parser.add_argument(
+        "--month",
+        type=int,
+        help="The month (MM) to filter by",
+    )
+    salary_stats_parser.add_argument(
+        "--day",
+        type=int,
+        help="The day (DD) to filter by",
+    )
 
     args = parser.parse_args()
 
@@ -164,7 +176,7 @@ def main() -> None:
 
     elif args.command == "filter":
         c = Clean()
-        
+
         combined = c.create_dataset(
             job_title=args.job,
             state=args.state,
@@ -194,6 +206,7 @@ def main() -> None:
         )
 
         print(c.salary_stats(combined))
+
 
 if __name__ == "__main__":
     main()
