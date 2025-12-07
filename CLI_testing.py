@@ -104,6 +104,25 @@ def main() -> None:
         help="The job title to filter by",
     )
 
+    # For salary_stats()
+    salary_stats_parser = subparsers.add_parser(
+        "sstats", help="Show annualized salary stats (mean/median)"
+    )
+
+    state_group = salary_stats_parser.add_mutually_exclusive_group(required=True)
+    state_group.add_argument("--state", help="State to compile (ex. 'New Jersey')")
+    state_group.add_argument("--all", action="store_true", help="Use all US states")
+
+    salary_stats_parser.add_argument(
+        "--job",
+        required=True,
+        help="The job title to filter by",
+    )
+
+    salary_stats_parser.add_argument("--year", help="The year (YYYY) to filter by",)
+    salary_stats_parser.add_argument("--month", help="The month (MM) to filter by",)
+    salary_stats_parser.add_argument("--day", help="The day (DD) to filter by",)
+
     args = parser.parse_args()
 
     if args.command == "search":
@@ -144,60 +163,8 @@ def main() -> None:
         print(combined.head())
 
     elif args.command == "filter":
-        states = [
-            "Alabama",
-            "Alaska",
-            "Arizona",
-            "Arkansas",
-            "California",
-            "Colorado",
-            "Connecticut",
-            "Delaware",
-            "Florida",
-            "Georgia",
-            "Hawaii",
-            "Idaho",
-            "Illinois",
-            "Indiana",
-            "Iowa",
-            "Kansas",
-            "Kentucky",
-            "Louisiana",
-            "Maine",
-            "Maryland",
-            "Massachusetts",
-            "Michigan",
-            "Minnesota",
-            "Mississippi",
-            "Missouri",
-            "Montana",
-            "Nebraska",
-            "Nevada",
-            "New Hampshire",
-            "New Jersey",
-            "New Mexico",
-            "New York",
-            "North Carolina",
-            "North Dakota",
-            "Ohio",
-            "Oklahoma",
-            "Oregon",
-            "Pennsylvania",
-            "Rhode Island",
-            "South Carolina",
-            "South Dakota",
-            "Tennessee",
-            "Texas",
-            "Utah",
-            "Vermont",
-            "Virginia",
-            "Washington",
-            "West Virginia",
-            "Wisconsin",
-            "Wyoming",
-        ]
-
         c = Clean()
+        
         combined = c.create_dataset(
             job_title=args.job,
             state=args.state,
@@ -212,6 +179,21 @@ def main() -> None:
         print(c.filterdesc(combined, *args.keywords))
         print(f"\nKeywords searched across {len(combined)} job listings.\n")
 
+    elif args.command == "sstats":
+        c = Clean()
+
+        combined = c.create_dataset(
+            job_title=args.job,
+            state=args.state,
+            all_states=args.all,
+            save=False,
+            year=args.year,
+            month=args.month,
+            day=args.day,
+            date=None,
+        )
+
+        print(c.salary_stats(combined))
 
 if __name__ == "__main__":
     main()
