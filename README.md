@@ -44,3 +44,64 @@ This project turns raw job market data into actionable intelligence for research
   - Min, max, average
   - Annualized salary
   - Statistical summaries
+
+### Command-Line Interface
+A fully structured CLI with subcommands:
+```
+search
+search_all
+create_dataset
+filter
+sstats
+```
+
+
+## Setup
+1. Install required dependencies:
+```
+pip install pandas tqdm requests
+```
+2. Obtain a SerpAPI key
+Sign up at: https://serpapi.com/
+
+## Usage: CLI Commands
+
+### Search for jobs in a single state
+```bash
+python cli.py search --state "New York" --job "Cybersecurity Analyst"
+```
+Save results:
+```bash
+python cli.py search -- state "Texas" --job "Developer" --save
+```
+
+### Search all 50 states
+Be mindful of SerpAPI request limits. The Free Plan limits you to 250 a month. 
+```bash
+python cli.py search_all --job "Nurse"
+```
+
+### Create a combined dataset
+Note: This creates a dataset from existing CSV files saved to your machine. 
+```bash
+python cli.py create_dataset --state "California" --job "Data Scientist" --save
+```
+Filter by date:
+```bash
+python cli.py create_dataset --all --job "Developer" --year 2025 --month 4
+```
+
+### Analyze job descriptions for keywords
+```bash
+python cli.py filter --keywords python aws splunk --all --job "Cybersecurity"
+```
+
+### Get salary statistics
+```bash
+python cli.py sstats --state "Virginia" --job "Software Engineer"
+```
+Filter by date:
+```bash
+python cli.py sstats --all --job "Nurse" --year 2024 --month 11
+```
+
