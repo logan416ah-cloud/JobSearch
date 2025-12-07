@@ -9,7 +9,10 @@ def main() -> None:
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     # For search()
-    search_parser = subparsers.add_parser("search", help="Search for jobs in a state")
+    search_parser = subparsers.add_parser(
+        "search", help="Search for jobs in a single U.S. state"
+    )
+
     search_parser.add_argument(
         "--state",
         required=True,
@@ -26,6 +29,12 @@ def main() -> None:
         help="If set, save the results to a CSV",
     )
 
+    search_parser.epilog = """
+    Examples:
+      python cli.py search --state "New York" --job "Cybersecurity Analyst"
+      python cli.py search --state Texas --job Nurse --save
+    """
+
     # For search_all_states()
     all_parser = subparsers.add_parser(
         "search_all", help="Search for jobs in ALL states"
@@ -41,6 +50,12 @@ def main() -> None:
         action="store_true",
         help="If set, save the results to a CSV",
     )
+
+    all_parser.epilog = """
+    Examples:
+      python cli.py search_all --job "Cybersecurity Analyst"
+      python cli.py search_all --job Nurse --save
+    """
 
     # For create_dataset()
     create_dataset_parser = subparsers.add_parser(
@@ -83,6 +98,12 @@ def main() -> None:
         help="Full date 'YYYY-MM-DD'",
     )
 
+    create_dataset_parser.epilog = """
+    Examples:
+      python cli.py create_dataset --state "New York" --job "Cybersecurity Analyst" --save
+      python cli.py create_dataset --all --job Nurse --year 2025 --month 4 --save
+    """
+
     # For filterdesc()
     filter_parser = subparsers.add_parser(
         "filter", help="Filter through job description for keywords"
@@ -119,6 +140,12 @@ def main() -> None:
         help="The day (DD) to filter by",
     )
 
+    filter_parser.epilog = """
+    Examples:
+      python cli.py filter --keywords "python" "aws" "COMPTIA" --state "New York" --job "Cybersecurity Analyst"
+      python cli.py filter --keywords "BSN" "trauma" "pediatrics" --all --job Nurse --year 2025 --month 4 
+    """
+
     # For salary_stats()
     salary_stats_parser = subparsers.add_parser(
         "sstats", help="Show annualized salary stats (mean/median)"
@@ -149,6 +176,12 @@ def main() -> None:
         type=int,
         help="The day (DD) to filter by",
     )
+
+    salary_stats_parser.epilog = """
+    Examples:
+      python cli.py sstats --state "New York" --job "Cybersecurity Analyst"
+      python cli.py sstats --all --job Nurse --year 2025 --month 4 
+    """
 
     args = parser.parse_args()
 
@@ -197,9 +230,9 @@ def main() -> None:
             state=args.state,
             all_states=args.all,
             save=False,
-            year=None,
-            month=None,
-            day=None,
+            year=args.year,
+            month=args.month,
+            day=args.day,
             date=None,
         )
 
