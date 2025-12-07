@@ -56,7 +56,7 @@ sstats
 ```
 
 
-## Setup
+# Setup
 1. Install required dependencies:
 ```
 pip install pandas tqdm requests
@@ -64,9 +64,9 @@ pip install pandas tqdm requests
 2. Obtain a SerpAPI key
 Sign up at: https://serpapi.com/
 
-## Usage: CLI Commands
+# Usage: CLI Commands
 
-### Search for jobs in a single state
+## Search for jobs in a single state
 ```bash
 python cli.py search --state "New York" --job "Cybersecurity Analyst"
 ```
@@ -75,13 +75,13 @@ Save results:
 python cli.py search -- state "Texas" --job "Developer" --save
 ```
 
-### Search all 50 states
+## Search all 50 states
 Be mindful of SerpAPI request limits. The Free Plan limits you to 250 a month. 
 ```bash
 python cli.py search_all --job "Nurse"
 ```
 
-### Create a combined dataset
+## Create a combined dataset
 Note: This creates a dataset from existing CSV files saved to your machine. 
 ```bash
 python cli.py create_dataset --state "California" --job "Data Scientist" --save
@@ -91,17 +91,22 @@ Filter by date:
 python cli.py create_dataset --all --job "Developer" --year 2025 --month 4
 ```
 
-### Analyze job descriptions for keywords
+## Analyze job descriptions for keywords
 ```bash
 python cli.py filter --keywords python aws splunk --all --job "Cybersecurity"
 ```
+Example Output:
 
-### Get salary statistics
+<img width="447" height="107" alt="Capture 1" src="https://github.com/user-attachments/assets/6b8576f9-6d8d-4a97-baf9-fb5626e924de" />
+
+## Get salary statistics
 ```bash
 python cli.py sstats --state "Virginia" --job "Software Engineer"
 ```
 Filter by date:
 ```bash
-python cli.py sstats --all --job "Nurse" --year 2024 --month 11
+python cli.py sstats --all --job "Cybersecurity" --year 2025 --month 11
 ```
+Example Output:
 
+<img width="784" height="34" alt="Capture 2" src="https://github.com/user-attachments/assets/e2a4cc40-768a-4250-99ba-d83a82781925" />
