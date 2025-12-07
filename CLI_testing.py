@@ -103,6 +103,21 @@ def main() -> None:
         required=True,
         help="The job title to filter by",
     )
+    filter_parser.add_argument(
+        "--year",
+        type=int,
+        help="The year (YYYY) to filter by",
+    )
+    filter_parser.add_argument(
+        "--month",
+        type=int,
+        help="The month (MM) to filter by",
+    )
+    filter_parser.add_argument(
+        "--day",
+        type=int,
+        help="The day (DD) to filter by",
+    )
 
     # For salary_stats()
     salary_stats_parser = subparsers.add_parser(
