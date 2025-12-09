@@ -7,6 +7,15 @@ import re
 import time
 from collections import Counter
 
+def get_data_dir() -> Path:
+    """
+    Returns the path to the user's .jobsearch/Job_Listings directory.
+    Creates it if it does not already exist.
+    """
+    home = Path.home()
+    data_dir = home / ".jobsearch" / "Job_Listings"
+    data_dir.mkdir(parents=True, exist_ok=True)
+    return data_dir
 
 class JobSearch:
     """
@@ -113,6 +122,9 @@ class JobSearch:
         next_page_token = None
         q = f"{job_title} {location}"
 
+        safe_title = job_title.replace(" ", "_")
+        safe_location = location.replace(" ", "_")
+
         with tqdm(desc="Fetching pages", unit="pages") as pbar:
             while True:
                 params = {
@@ -158,19 +170,16 @@ class JobSearch:
             job_df = pd.DataFrame(job_list)
 
             if save:
-                current_date = dt.datetime.today()
+                today = dt.datetime.today().strftime("%Y-%m-%d")
+                filename = f"{safe_location}_{safe_title}_jobs_{today}.csv"
 
-                today = current_date.strftime("%Y-%m-%d")
-                folder = Path("Job_Listings")
-                folder.mkdir(exist_ok=True)
+                save_dir = get_data_dir()
+                save_path = save_dir / filename
+                job_df.to_csv(save_path, index=False)
 
-                safe_title = job_title.replace(" ", "_")
-                file_path = folder / f"{location}_{safe_title}_jobs_{today}.csv"
-                job_df.to_csv(file_path, index=False)
+                print(f"\nSaved CSV to: {save_path}\n")
 
-                return job_df
-            else:
-                return job_df
+            return job_df
 
     def search_all_states(self, job_title: str, save: bool = False) -> pd.DataFrame:
         states = [
@@ -226,12 +235,9 @@ class JobSearch:
             "Wyoming",
         ]
 
-        current_date = dt.datetime.today()
-        today = current_date.strftime("%Y-%m-%d")
-        folder = Path("Job_Listings")
-        folder.mkdir(exist_ok=True)
-
+        today = dt.datetime.today().strftime("%Y-%m-%d")
         safe_title = job_title.replace(" ", "_")
+        save_dir = get_data_dir()
 
         all_jobs = []
 
@@ -243,30 +249,28 @@ class JobSearch:
                 all_jobs.append(state_df)
 
                 if save:
-                    state_file_path = folder / f"{state}_{safe_title}_jobs_{today}.csv"
+                    state_safe = state.replace(" ", "_")
+                    state_file_path = save_dir / f"{state_safe}_{safe_title}_jobs_{today}.csv"
                     state_df.to_csv(state_file_path, index=False)
+                    print(f"Saved {state} CSV to: {state_file_path}")
 
         combined_jobs = (
             pd.concat(all_jobs, ignore_index=True) if all_jobs else pd.DataFrame()
         )
 
         if save:
-            combined_path = folder / f"ALL_STATE_{safe_title}_jobs_{today}.csv"
-            combined_jobs.to_csv(combined_path, index=False)
+            filename = f"ALL_STATES_{safe_title}_jobs_{today}.csv"
+            save_path = save_dir / filename
+            combined_jobs.to_csv(save_path, index=False)
+
+            print(f"Saved combined CSV to: {save_path}\n")
 
         return combined_jobs
 
 
 class Clean:
     def __init__(self) -> None:
-        try:
-            self.base_path = Path(__file__).parent
-        except NameError:
-            self.base_path = Path.cwd()
-
-        self.data_folder = self.base_path / "Job_Listings"
-        if not self.data_folder.exists():
-            print("No Jobs_Listing folder. Run JobSearch.search()")
+        self.data_folder = get_data_dir()
 
     def create_dataset(
         self,
@@ -306,47 +310,47 @@ class Clean:
             ValueError: If both state and all_states are specified, or neither is.
         """
 
-        # Converts job title into a string suited for the CSV file creation.
-        job_title_safe = job_title.replace(" ", "_")
-
         # Validate whether all_states or specified state. Can't have both.
         valid = (all_states and state is None) or (not all_states and state is not None)
-
         if not valid:
             raise ValueError(
                 "You must specify either 'state' OR  all_states=True, but not both"
             )
 
-        # Contruct the prefix for the file name.
-        if state is not None:
-            state_safe = state.replace(" ", "_")
-            prefix = f"{state_safe}_{job_title_safe}_jobs_"
-        else:
-            prefix = f"*_{job_title_safe}_jobs_"
+        # Converts job title into a string suited for the CSV file creation.
+        job_title_safe = job_title.replace(" ", "_")
 
-        if date:  # If date was specified, break down.
+        # Determine dataset label
+        if all_states:
+            dataset_label = "ALL_STATES"
+        else:
+            dataset_label = state.replace(" ", "_")
+
+        prefix = f"{dataset_label}_{job_title_safe}_jobs_"
+
+        # If a full date was passed, break it apart.
+        if date:  
             year = date.year
             month = date.month
             day = date.day
 
-        if date or year or month or day:
-            if (month or day) and not year:
-                raise ValueError("Year is required when filtering by month or day.")
+        # Validate date filtering
+        if (month or day) and not year:
+            raise ValueError("Year is required when filtering by month or day.")
 
-            # Create the file patten for the CSV file.
-            if year and month and day:
-                file_pattern = f"{prefix}{year}-{month:02d}-{day:02d}.csv"
-            elif year and month:
-                file_pattern = f"{prefix}{year}-{month:02d}-*.csv"
-            elif year:
-                file_pattern = f"{prefix}{year}-*.csv"
-
+        # Create the file patten for the CSV file.
+        if year and month and day:
+            file_pattern = f"{prefix}{year}-{month:02d}-{day:02d}.csv"
+        elif year and month:
+            file_pattern = f"{prefix}{year}-{month:02d}-*.csv"
+        elif year:
+            file_pattern = f"{prefix}{year}-*.csv"
         else:
             file_pattern = f"{prefix}*.csv"
 
+
         # List containing the specified files.
         files = list(self.data_folder.glob(file_pattern))
-
         if not files:
             print("No data files found.")
             return pd.DataFrame()
@@ -357,36 +361,31 @@ class Clean:
         for f in tqdm(files, desc="Loading job data", unit="file"):
             try:
                 df = pd.read_csv(f)
+                datasets.append(df)
             except pd.errors.EmptyDataError:
                 print(f"\nEmpty CSV skipped: {f}")
                 continue
-
-            datasets.append(df)  # Add the DataFrame to the list.
 
         # Combine the DataFrames into one.
         combined_df = (
             pd.concat(datasets, ignore_index=True) if datasets else pd.DataFrame()
         )
 
+        # Salary parsing column expansion
         if not combined_df.empty and "salary" in combined_df.columns:
-            # Applys parse_salary() to determine:
-            # "min_raw","max_raw", "avg_value","annual","period"
-            #
-            # Then applies it to the DataFrame.
             parsed = combined_df["salary"].apply(self.parse_salary)
-
             parsed_df = parsed.apply(pd.Series)
-
             combined_df = pd.concat([combined_df, parsed_df], axis=1)
 
-        if save and all_states:
-            save_path = self.base_path / "Job_Listings" / "Custom_dataset_folder"
-            save_path.mkdir(exist_ok=True)
+        if save:
+            today = dt.datetime.today().strftime("%Y-%m-%d")
+            filename  = f"{dataset_label}_{job_title_safe}_dataset_{today}.csv"
+            save_path = self.data_folder / filename
 
-            file_path = save_path / f"combined_{job_title_safe}_dataset.csv"
-            combined_df.to_csv(file_path, index=False)
+            combined_df.to_csv(save_path, index=False)
+            print(f"\nSaved compiled dataset to: {save_path}\n")
 
-        print(f"Combined dataset created with {len(combined_df)} rows.")
+        print(f"\nCombined dataset created with {len(combined_df)} rows.\n")
 
         return combined_df
 
@@ -442,13 +441,13 @@ class Clean:
 
         if re.search(r"hour|/hr|/h|\bhr\b", text):
             period = "hour"
-        elif re.search(r"day|/day", text):
+        elif re.search(r"\bday\b|/day|daily\b", text):
             period = "day"
         elif re.search(r"\bweek\b|/week|/wk\b", text):
             period = "week"
         elif "month" in text:
             period = "month"
-        elif re.search(r"yr|/yr|per year", text):
+        elif re.search(r"\byr\b|/yr|per year|a year|\bannually\b|\bannual\b", text):
             period = "year"
         else:
             period = "year"
@@ -645,7 +644,7 @@ class Clean:
 
         return kw_df
 
-    def salary_stats(self, df: pd.DataFrame):
+    def salary_stats(self, df: pd.DataFrame) -> pd.DataFrame:
         if df.empty:
             return pd.DataFrame()
 
@@ -672,16 +671,3 @@ class Clean:
         )
 
         return stats
-
-
-if __name__ == "__main__":
-    # Example Usage
-    # j = JobSearch("your_api_key_here")
-
-    # df = j.search("Cybersecurity", "New York", save=True)
-    # print(df.head())
-
-    c = Clean()
-    combined = c.create_dataset("Cybersecurity", all_states=True)
-    print(c.filterdesc(combined, "python", "aws", "COMPTIA", "AzuRe", "Security+", "Penetration testing"))
-    print(c.salary_stats(combined))
