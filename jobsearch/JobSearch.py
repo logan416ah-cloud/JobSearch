@@ -322,7 +322,7 @@ class Clean:
 
         # Determine dataset label
         if all_states:
-            dataset_label = "ALL_STATES"
+            dataset_label = "*"
         else:
             dataset_label = state.replace(" ", "_")
 
