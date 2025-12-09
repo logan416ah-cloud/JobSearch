@@ -1,4 +1,4 @@
-from .JobSearch import JobSearch, Clean
+from .jobsearch import JobSearch, Clean
 import argparse
 from datetime import datetime
 
