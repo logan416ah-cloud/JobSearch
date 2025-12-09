@@ -10,9 +10,9 @@ readme = "README.md"
 requires-Python = ">=3.9"
 license = { text = "MIT" }
 
-authors = {
+authors = [
     { name = "Logan", email = "logan416ah@gmail.com" }
-}
+]
 
 dependecies = [
     "requests",
