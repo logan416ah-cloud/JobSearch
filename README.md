@@ -100,7 +100,7 @@ from jobsearch import JobSearch, Clean
 j = JobSearch("YOUR_API_KEY")
 df = j.search_all_states("Cybersecurity", save=True)
 
-# Example for loading and analyzing saved data
+# Example for loading and analyzing saved data (Must have CSVs to filter through)
 c = Clean()
 dataset = c.create_dataset("Cybersecurity", all_states=True)
 filter = c.filterdesc(dataset, "python", "aws", "splunk", "COMPTIA")
@@ -114,6 +114,7 @@ Example Output:
 <img width="781" height="118" alt="Capture 3" src="https://github.com/user-attachments/assets/5be96347-03ad-4df9-9ce1-3a7587ae83ce" />
 
 ### Use the CLI after installation
+Note: You must have CSVs downloaded for filter and sstats functionality.
 Search a single state
 ```bash
 jobsearch search --state "California" --job "Developer"
@@ -122,7 +123,7 @@ Search all 50 states
 ```bash
 jobsearch search_all --job "Cybersecurity"
 ```
-Filter job descriptions
+Filter job descriptions 
 ```bash
 jobsearch filter --keywords python aws --all --job Analyst
 ```
