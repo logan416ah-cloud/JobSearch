@@ -115,6 +115,7 @@ Example Output:
 
 ### Use the CLI after installation
 Note: You must have CSVs downloaded for filter and sstats functionality.
+
 Search a single state
 ```bash
 jobsearch search --state "California" --job "Developer"
