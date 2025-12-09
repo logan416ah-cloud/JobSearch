@@ -10,6 +10,7 @@ JobSearch is a full-featured data pipeline that integrates with the SerpAPI Goog
 - Analyze job descriptions for keyword frequencies
 - Calculate salary statistics across states or time periods
 - Use a professional, multi-command CLI interface
+  
 This project turns raw job market data into actionable intelligence for researchers, analysts, and job seekers.
 
 ## Features
