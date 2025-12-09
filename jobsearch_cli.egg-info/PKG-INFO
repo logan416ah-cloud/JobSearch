@@ -1,0 +1,126 @@
+Metadata-Version: 2.4
+Name: jobsearch-cli
+Version: 1.0.0
+Summary: A Python toolkit and CLI for searching, cleaning, and analyzing job market data using the SerpAPI Google Jobs API.
+Author-email: Logan <logan416ah@gmail.com>
+License: MIT
+Requires-Python: >=3.9
+Description-Content-Type: text/markdown
+License-File: LICENSE.txt
+Requires-Dist: requests
+Requires-Dist: pandas
+Requires-Dist: tqdm
+Dynamic: license-file
+
+# JobSearch CLI + Data Pipeline
+A Python-powered job market data extraction, cleaning, and analysis toolkit.
+
+## Overview
+JobSearch is a full-featured data pipeline that integrates with the SerpAPI Google Jobs API to:
+- Search job listings across any U.S. state or all 50 states
+- Save job postings as CSV datasets
+- Combine, filter, and clean datasets using a dedicated processing engine
+- Parse salaries into structured and annualized values
+- Analyze job descriptions for keyword frequencies
+- Calculate salary statistics across states or time periods
+- Use a professional, multi-command CLI interface
+This project turns raw job market data into actionable intelligence for researchers, analysts, and job seekers.
+
+## Features
+
+### Job Search
+- Query job listings by state or all 50 states
+- Automatic pagination handling
+- Retry logic for API processing delays
+- Optional CSV output
+
+### Dataset Creation
+- Combine multiple saved CSVs into unified datasets
+- Filter by:
+  - Job title
+  - State or all states
+  - Specific date (YYYY-MM-DD)
+  - Year, month, or day
+
+### Keyword Analysis
+- Search job descriptions for any number of keywords
+- See:
+  - Total mentions
+  - Per-listing frequency
+  - Percentage of total results
+
+### Salary Parsing & Statistics
+- Converts salaries like:
+  - 130K–160K a year
+  - $30–37.50/hr
+  - US$6,211–15,211/month
+- Into:
+  - Min, max, average
+  - Annualized salary
+  - Statistical summaries
+
+### Command-Line Interface
+A fully structured CLI with subcommands:
+```
+search
+search_all
+create_dataset
+filter
+sstats
+```
+
+
+# Setup
+1. Install required dependencies:
+```
+pip install pandas tqdm requests
+```
+2. Obtain a SerpAPI key
+Sign up at: https://serpapi.com/
+
+# Usage: CLI Commands
+
+## Search for jobs in a single state
+```bash
+python cli.py search --state "New York" --job "Cybersecurity Analyst"
+```
+Save results:
+```bash
+python cli.py search -- state "Texas" --job "Developer" --save
+```
+
+## Search all 50 states
+Be mindful of SerpAPI request limits. The Free Plan limits you to 250 a month. 
+```bash
+python cli.py search_all --job "Nurse"
+```
+
+## Create a combined dataset
+Note: This creates a dataset from existing CSV files saved to your machine. 
+```bash
+python cli.py create_dataset --state "California" --job "Data Scientist" --save
+```
+Filter by date:
+```bash
+python cli.py create_dataset --all --job "Developer" --year 2025 --month 4
+```
+
+## Analyze job descriptions for keywords
+```bash
+python cli.py filter --keywords python aws splunk --all --job "Cybersecurity"
+```
+Example Output:
+
+<img width="447" height="107" alt="Capture 1" src="https://github.com/user-attachments/assets/6b8576f9-6d8d-4a97-baf9-fb5626e924de" />
+
+## Get salary statistics
+```bash
+python cli.py sstats --state "Virginia" --job "Software Engineer"
+```
+Filter by date:
+```bash
+python cli.py sstats --all --job "Cybersecurity" --year 2025 --month 11
+```
+Example Output:
+
+<img width="784" height="34" alt="Capture 2" src="https://github.com/user-attachments/assets/e2a4cc40-768a-4250-99ba-d83a82781925" />

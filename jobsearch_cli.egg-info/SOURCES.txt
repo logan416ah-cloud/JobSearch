@@ -1,0 +1,12 @@
+LICENSE.txt
+README.md
+pyproject.toml
+jobsearch/JobSearch.py
+jobsearch/__init__.py
+jobsearch/cli.py
+jobsearch_cli.egg-info/PKG-INFO
+jobsearch_cli.egg-info/SOURCES.txt
+jobsearch_cli.egg-info/dependency_links.txt
+jobsearch_cli.egg-info/entry_points.txt
+jobsearch_cli.egg-info/requires.txt
+jobsearch_cli.egg-info/top_level.txt

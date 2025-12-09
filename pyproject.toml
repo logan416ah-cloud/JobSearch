@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "jobsearch-cli"
+version = "1.0.0"
+description = "A Python toolkit and CLI for searching, cleaning, and analyzing job market data using the SerpAPI Google Jobs API."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+
+authors = [
+    { name = "Logan", email = "logan416ah@gmail.com" }
+]
+
+dependencies = [
+    "requests",
+    "pandas",
+    "tqdm"
+]
+
+# INSTALLABLE CLI COMMAND
+[project.scripts]
+jobsearch = "jobsearch.cli:main"

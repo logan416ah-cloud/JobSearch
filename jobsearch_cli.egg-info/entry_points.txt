@@ -1,0 +1,2 @@
+[console_scripts]
+jobsearch = jobsearch.cli:main
