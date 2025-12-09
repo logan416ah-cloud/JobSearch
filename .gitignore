@@ -7,12 +7,18 @@ dist/
 build/
 *.egg-info/
 
+# VS Code
+.vscode/
+
 # Virtual environments
+.venv/
 venv/
 .env/
+env/
 
 # OS files
 .DS_Store
 
 # User data directory (never commit)
 .jobsearch/
+Job_Listings/

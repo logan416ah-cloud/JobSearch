@@ -7,22 +7,14 @@ name = "jobsearch-cli"
 version = "1.0.0"
 description = "A Python toolkit and CLI for searching, cleaning, and analyzing job market data using the SerpAPI Google Jobs API."
 readme = "README.md"
-<<<<<<< HEAD
 requires-python = ">=3.9"
-=======
-requires-Python = ">=3.9"
->>>>>>> f2a308180d42de5841076ef6411d24ef4ebcfbe5
 license = { text = "MIT" }
 
 authors = [
     { name = "Logan", email = "logan416ah@gmail.com" }
 ]
 
-<<<<<<< HEAD
 dependencies = [
-=======
-dependecies = [
->>>>>>> f2a308180d42de5841076ef6411d24ef4ebcfbe5
     "requests",
     "pandas",
     "tqdm"
@@ -30,8 +22,4 @@ dependecies = [
 
 # INSTALLABLE CLI COMMAND
 [project.scripts]
-<<<<<<< HEAD
 jobsearch = "jobsearch.cli:main"
-=======
-jobsearch = "jobsearch.cli:main"
->>>>>>> f2a308180d42de5841076ef6411d24ef4ebcfbe5
