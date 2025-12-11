@@ -6,6 +6,8 @@ from tqdm import tqdm
 import re
 import time
 from collections import Counter
+import sqlite3
+from database import Database
 
 def get_data_dir() -> Path:
     """
@@ -63,17 +65,17 @@ class JobSearch:
         }
 
         try:
-            response = requests.get(url, params=params)
-            if response.status_code == 200:
-                return True
-            else:
-                print(
-                    f"WARNING: API KEY may be invalid. Status code: {response.status_code}"
-                )
+            response = requests.get(url, params=params, timeout=10)
+            data = response.json()
+
+            if "error" in data:
+                print(f"API key error: {data['error']}")
                 return False
+            return True
+        
         except requests.RequestException as e:
             print(f"WARNING: API KEY check failed. Error: {e}")
-        return False
+            return False
 
     def _get_page_with_retry(self, params: dict, max_retries: int = 5):
         for attempt in range(1, max_retries + 1):
@@ -671,3 +673,45 @@ class Clean:
         )
 
         return stats
+    
+    def import_csv_folder_to_db(self):
+        folder = self.data_folder
+        csv_files = list(folder.glob("*.csv"))
+
+        if not csv_files:
+            print("No CSV files found in Job_Listings.")
+            return
+        
+        db = Database()
+
+        for csv in csv_files:
+            filename = csv.name
+
+            if db.file_already_imported(filename):
+                print(f"Skipping {filename} (already imported).")
+                continue
+
+            print(f"Importing {filename}")
+
+            df = pd.read_csv(csv)
+
+            # Add parsed salary columns if they are missing
+            if "salary" in df.columns:
+                df["salary"] = df["salary"].fillna("").astype(str)
+                parsed = df["salary"].apply(self.parse_salary)
+                parsed_df = parsed.apply(pd.Series)
+                df = pd.concat([df, parsed_df], axis=1)
+
+            if "state" not in df.columns:
+                df["state"] = None
+
+            # Add date extracted from filename
+            date_match = re.search(r"\d{4}-\d{2}-\d{2}", csv.stem)
+            df["date_added"] = date_match.group(0) if date_match else None
+
+            db.insert_dataframe(df)
+
+            db.mark_file_imported(filename)
+
+        db.close()
+        print("\nAll CSV files imported into the database.\n")
