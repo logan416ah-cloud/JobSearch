@@ -1,5 +1,13 @@
-from .JobSearch import JobSearch, Clean
+from .jobsearch import JobSearch, Clean
+from .database import Database
+
 from .cli import main
 
-__all__ = ["JobSearch", "Clean"]
-__version__ = "1.0.0"
+
+__all__ = [
+    "JobSearch", 
+    "Clean",
+    "Database",
+]
+
+__version__ = "1.1.0"
